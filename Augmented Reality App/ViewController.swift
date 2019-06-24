@@ -18,7 +18,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     //MARK: - VIEW DID LOAD SECTION
     override func viewDidLoad() {
-        super.viewDidLoad()
+        super.viewDidLoad( )
+        
+        //Display a point cloud showing intermediate results of the scene analysis that ARKit uses to track device position.
+        self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
         
         // Set the view's delegate
         sceneView.delegate = self
@@ -27,13 +30,13 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.automaticallyUpdatesLighting = true
         
         //Declare a diceScene container for the node hierarchy and global properties that together form a displayable 3D scene
-        let heartScene = SCNScene(named: "art.scnassets/Heart.scn")
+        //let heartScene = SCNScene(named: "art.scnassets/Heart.scn")
         //Returns the first node in the node’s child node subtree with the specified name
-        if let heartNode = heartScene?.rootNode.childNode(withName: "Heart", recursively: true) {
+        //if let heartNode = heartScene?.rootNode.childNode(withName: "Heart", recursively: true) {
         //Set diceNode position
-        heartNode.position = SCNVector3(x: 0, y: 0, z: -0.3)
+        //heartNode.position = SCNVector3(x: 0, y: 0, z: -0.3)
         //Adds a node to the node’s array of children.
-        sceneView.scene.rootNode.addChildNode(heartNode)
+        //sceneView.scene.rootNode.addChildNode(heartNode)
             
             
             //Declare a six-sided polyhedron geometry whose faces are all rectangles, optionally with rounded edges and corners
@@ -54,7 +57,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             //node.geometry = sphere
             //Adds a node to the node’s array of children
             //sceneView.scene.rootNode.addChildNode(node)
-    }
+   // }
 }
     
     
@@ -64,13 +67,15 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        //A Boolean value indicating whether the current device supports this session configuration class.
+        print("World Tracking is supported = \(ARWorldTrackingConfiguration.isSupported)")
+        
         // Create a session configuration
         let configuration = ARWorldTrackingConfiguration( )
         
-    
-        print("World Tracking is supported = \(ARWorldTrackingConfiguration.isSupported)")
+        //A value specifying whether and how the session attempts to automatically detect flat surfaces in the camera-captured image
+        configuration.planeDetection = .horizontal
         
-
         // Run the view's session
         sceneView.session.run(configuration)
     }
@@ -87,5 +92,40 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Pause the view's session
         sceneView.session.pause( )
+    }
+    
+    //Methods and properties common to the SCNView, SCNLayer, and SCNRenderer classes.
+    func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+        
+        //If the Information about the position and orientation of a real-world flat surface detected in a world-tracking AR session.
+        if anchor is ARPlaneAnchor {
+            
+            //Set planAnchor object equals to anchor and down cast as ARPlaneAnchor
+            let planAnchor = anchor as! ARPlaneAnchor
+            //A rectangular, one-sided plane geometry of specified width and height.
+            let plane = SCNPlane(width: CGFloat(planAnchor.extent.x), height: CGFloat(planAnchor.extent.z))
+            
+            //Set planeNode object equals to SCNNode( ).
+            let planeNode = SCNNode( )
+            planeNode.position = SCNVector3(x: planAnchor.center.x, y: 0, z: planAnchor.center.x)
+            
+            //The transform applied to the node relative to its parent. Animatable.
+            planeNode.transform = SCNMatrix4MakeRotation(-Float.pi/2, 1, 0, 0)
+            
+            //A set of shading attributes that define the appearance of a geometry's surface when rendered.
+            let gridMaterial = SCNMaterial( )
+            //An object that manages image data in your app.
+            gridMaterial.diffuse.contents = UIImage(named: "art.scnassets/grid.png")
+            
+            //An array of SCNMaterial objects that determine the geometry’s appearance when rendered.
+            plane.materials = [gridMaterial]
+            //The geometry attached to the node.
+            planeNode.geometry = plane
+            //Adds a node to the node’s array of children.
+            node.addChildNode(planeNode)
+        } else {
+            
+            return
+        }
     }
 }
