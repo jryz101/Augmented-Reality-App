@@ -27,13 +27,13 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.automaticallyUpdatesLighting = true
         
         //Declare a diceScene container for the node hierarchy and global properties that together form a displayable 3D scene
-        let diceScene = SCNScene(named: "art.scnassets/diceCollada.scn")
+        let heartScene = SCNScene(named: "art.scnassets/Heart.scn")
         //Returns the first node in the node’s child node subtree with the specified name
-        if let diceNode = diceScene?.rootNode.childNode(withName: "Dice", recursively: true) {
+        if let heartNode = heartScene?.rootNode.childNode(withName: "Heart", recursively: true) {
         //Set diceNode position
-        diceNode.position = SCNVector3(x: 0, y: 0, z: 0)
+        heartNode.position = SCNVector3(x: 0, y: 0, z: -0.3)
         //Adds a node to the node’s array of children.
-        sceneView.scene.rootNode.addChildNode(diceNode)
+        sceneView.scene.rootNode.addChildNode(heartNode)
             
             
             //Declare a six-sided polyhedron geometry whose faces are all rectangles, optionally with rounded edges and corners
