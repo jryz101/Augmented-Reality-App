@@ -10,6 +10,9 @@ import ARKit
 
 class ViewController: UIViewController, ARSCNViewDelegate {
     
+    //Set heartArray equals to [SCNModel]( )
+    var heartArray = [SCNNode] ( )
+    
     //SceneView outlet
     @IBOutlet var sceneView: ARSCNView!
     
@@ -21,34 +24,16 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         super.viewDidLoad( )
         
         //Display a point cloud showing intermediate results of the scene analysis that ARKit uses to track device position.
-        self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
+        //self.sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
         
         // Set the view's delegate
         sceneView.delegate = self
         
         //A Boolean value that specifies whether ARKit creates and updates SceneKit lights in the view's scene
         sceneView.automaticallyUpdatesLighting = true
-        
-            //Declare a six-sided polyhedron geometry whose faces are all rectangles, optionally with rounded edges and corners
-            //let cube = SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0.01)
-            //A sphere (or ball or globe) geometry.
-            //let sphere = SCNSphere(radius: 0.2)
-            //Declare a set of shading attributes that define the appearance of a geometry's surface when rendered
-            //let material = SCNMaterial( )
-            //The visual contents of the material property—a color, image, or source of animated content. Animatable
-            //material.diffuse.contents = UIImage(named: "art.scnassets/ship.scn")
-            //An array of SCNMaterial objects that determine the geometry’s appearance when rendered
-            //sphere.materials = [material]
-            //A structural element of a scene graph, representing a position and transform in a 3D coordinate space, to which you can attach geometry, lights, cameras, or other displayable content
-            //let node = SCNNode( )
-            //Declare a representation of a three-component vector
-            //node.position = SCNVector3(x: 0, y: 0.1, z: -0.5)
-            //Set node.gemetry equals to cube
-            //node.geometry = sphere
-            //Adds a node to the node’s array of children
-            //sceneView.scene.rootNode.addChildNode(node)
-   // }
-}
+    }
+    
+    
     
     
     
@@ -84,33 +69,73 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.session.pause( )
     }
     
+    
+    
+    
+    
+
+    //Tells this object that one or more new touches occurred in a view or window.
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
+        //Optional binding methods for set location on the scene view
         if let touch = touches.first {
+            //Returns the current location of the receiver in the coordinate system of the given view.
             let touchLocation = touch.location(in: sceneView)
-            
+            //Searches for real-world objects or AR anchors in the captured camera image corresponding to a point in the SceneKit view.
             let results = sceneView.hitTest(touchLocation, types: .existingPlaneUsingExtent)
             
+            //Optional binding methods for return touch results.
             if let hitResults = results.first {
-                //Declare a diceScene container for the node hierarchy and global properties that together form a displayable 3D scene
+                //Declare a heartScene container for the node hierarchy and global properties that together form a displayable 3D scene
                 let heartScene = SCNScene(named: "art.scnassets/Heart.scn")
                 
                 //Returns the first node in the node’s child node subtree with the specified name
                 if let heartNode = heartScene?.rootNode.childNode(withName: "Heart", recursively: true) {
                     
-                //Set diceNode position
-                    heartNode.position = SCNVector3 (
+                //Set heartNode position
+                heartNode.position = SCNVector3 (
+                    
+                        //The position and orientation of the hit test result relative to the world coordinate system.
                         x: hitResults.worldTransform.columns.3.x,
                         y: hitResults.worldTransform.columns.3.y + heartNode.boundingSphere.radius,
                         z: hitResults.worldTransform.columns.3.z
                     )
+                
+                heartArray.append(heartNode)
                     
                 //Adds a node to the node’s array of children.
                 sceneView.scene.rootNode.addChildNode(heartNode)
+                    
             }
         }
     }
 }
+    
+    
+    
+    
+    
+    
+    //MARK: - REMOVE OBJECT BUTTON SECTION
+    @IBAction func removeButton(_ sender: UIBarButtonItem) {
+        
+        //Conditional methods for remove the heartNode
+        if !heartArray.isEmpty {
+            
+            for heart in heartArray {
+                //Removes the node from its parent’s array of child nodes.
+                heart.removeFromParentNode()
+            }
+            
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
     
     //Methods and properties common to the SCNView, SCNLayer, and SCNRenderer classes.
     func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
@@ -142,10 +167,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             //Adds a node to the node’s array of children.
             node.addChildNode(planeNode)
         } else {
-            
             return
-            
-            }
         }
     }
+}
 
